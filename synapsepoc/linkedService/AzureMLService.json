@@ -1,0 +1,17 @@
+{
+	"name": "AzureMLService",
+	"properties": {
+		"annotations": [],
+		"type": "AzureMLService",
+		"typeProperties": {
+			"subscriptionId": "34ee4d01-fcbb-4649-a377-491b2a66baa8",
+			"resourceGroupName": "devintersection-218-aml-demo",
+			"mlWorkspaceName": "contoso-workspace-demo",
+			"authentication": "MSI"
+		},
+		"connectVia": {
+			"referenceName": "AutoResolveIntegrationRuntime",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}
