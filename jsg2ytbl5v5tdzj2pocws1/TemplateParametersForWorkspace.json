@@ -19,6 +19,12 @@
 		},
 		"keyVaultLinkedservice_properties_typeProperties_baseUrl": {
 			"value": "@{concat('https://',linkedService().keyVaultName,'.vault.azure.net/')}"
+		},
+		"AzureMLService_properties_typeProperties_subscriptionId": {
+			"value": "34ee4d01-fcbb-4649-a377-491b2a66baa8"
+		},
+		"AzureMLService_properties_typeProperties_resourceGroupName": {
+			"value": "devintersection-218-aml-demo"
 		}
 	}
 }

@@ -26,6 +26,14 @@
 		"keyVaultLinkedservice_properties_typeProperties_baseUrl": {
 			"type": "string",
 			"defaultValue": "@{concat('https://',linkedService().keyVaultName,'.vault.azure.net/')}"
+		},
+		"AzureMLService_properties_typeProperties_subscriptionId": {
+			"type": "string",
+			"defaultValue": "34ee4d01-fcbb-4649-a377-491b2a66baa8"
+		},
+		"AzureMLService_properties_typeProperties_resourceGroupName": {
+			"type": "string",
+			"defaultValue": "devintersection-218-aml-demo"
 		}
 	},
 	"variables": {
@@ -1326,7 +1334,7 @@
 						"spark.dynamicAllocation.enabled": "false",
 						"spark.dynamicAllocation.minExecutors": "39",
 						"spark.dynamicAllocation.maxExecutors": "39",
-						"spark.autotune.trackingId": "a956fd75-c330-45ca-af0a-562b4c1176de"
+						"spark.autotune.trackingId": "27a2f47c-173d-4d8b-b429-ab391d5e105f"
 					}
 				},
 				"metadata": {
@@ -1351,12 +1359,15 @@
 						"sparkVersion": "2.4",
 						"nodeCount": 5,
 						"cores": 4,
-						"memory": 28
-					}
+						"memory": 28,
+						"automaticScaleJobs": false
+					},
+					"sessionKeepAliveTimeout": 30
 				},
 				"cells": [
 					{
 						"cell_type": "markdown",
+						"metadata": {},
 						"source": [
 							"# Predict NYC Taxi Tips using Spark ML and Azure Open Datasets\n",
 							"\n",
@@ -1369,6 +1380,7 @@
 					},
 					{
 						"cell_type": "code",
+						"metadata": {},
 						"source": [
 							"import matplotlib.pyplot as plt\n",
 							"\n",
@@ -1391,6 +1403,7 @@
 					},
 					{
 						"cell_type": "markdown",
+						"metadata": {},
 						"source": [
 							"## Ingest Data¶ \n",
 							"\n",
@@ -1399,6 +1412,7 @@
 					},
 					{
 						"cell_type": "code",
+						"metadata": {},
 						"source": [
 							"# Import NYC yellow cab data from Azure Open Datasets\n",
 							"from azureml.opendatasets import NycTlcYellow\n",
@@ -1417,6 +1431,7 @@
 					},
 					{
 						"cell_type": "code",
+						"metadata": {},
 						"source": [
 							"#To make development easier, faster and less expensive downsample for now\n",
 							"sampled_taxi_df = nyc_tlc_df.sample(True, 0.001, seed=1234)"
@@ -1426,6 +1441,7 @@
 					},
 					{
 						"cell_type": "markdown",
+						"metadata": {},
 						"source": [
 							"## Exploratory Data Analysis\n",
 							"\n",
@@ -1434,6 +1450,7 @@
 					},
 					{
 						"cell_type": "code",
+						"metadata": {},
 						"source": [
 							"#The charting package needs a Pandas dataframe or numpy array do the conversion\n",
 							"sampled_taxi_pd_df = sampled_taxi_df.toPandas()\n",
@@ -1468,6 +1485,7 @@
 					},
 					{
 						"cell_type": "markdown",
+						"metadata": {},
 						"source": [
 							"## Data Prep and Featurization\n",
 							"\n",
@@ -1479,6 +1497,7 @@
 					},
 					{
 						"cell_type": "code",
+						"metadata": {},
 						"source": [
 							"taxi_df = sampled_taxi_df.select('totalAmount', 'fareAmount', 'tipAmount', 'paymentType', 'rateCodeId', 'passengerCount'\\\n",
 							"                                , 'tripDistance', 'tpepPickupDateTime', 'tpepDropoffDateTime'\\\n",
@@ -1501,6 +1520,7 @@
 					},
 					{
 						"cell_type": "markdown",
+						"metadata": {},
 						"source": [
 							"## Data Prep and Featurization Part 2\n",
 							"\n",
@@ -1512,6 +1532,7 @@
 					},
 					{
 						"cell_type": "code",
+						"metadata": {},
 						"source": [
 							"taxi_featurised_df = taxi_df.select('totalAmount', 'fareAmount', 'tipAmount', 'paymentType', 'passengerCount'\\\n",
 							"                                                , 'tripDistance', 'weekdayString', 'pickupHour','tripTimeSecs','tipped'\\\n",
@@ -1528,6 +1549,7 @@
 					},
 					{
 						"cell_type": "markdown",
+						"metadata": {},
 						"source": [
 							"## Encoding\n",
 							"\n",
@@ -1541,6 +1563,7 @@
 					},
 					{
 						"cell_type": "code",
+						"metadata": {},
 						"source": [
 							"# The sample uses an algorithm that only works with numeric features convert them so they can be consumed\n",
 							"sI1 = StringIndexer(inputCol=\"trafficTimeBins\", outputCol=\"trafficTimeBinsIndex\"); \n",
@@ -1556,6 +1579,7 @@
 					},
 					{
 						"cell_type": "markdown",
+						"metadata": {},
 						"source": [
 							"## Generation of Testing and Training Data Sets\n",
 							"Simple split, 70% for training and 30% for testing the model. Playing with this ratio may result in different models.\n",
@@ -1564,6 +1588,7 @@
 					},
 					{
 						"cell_type": "code",
+						"metadata": {},
 						"source": [
 							"# Decide on the split between training and testing data from the dataframe \n",
 							"trainingFraction = 0.7\n",
@@ -1578,6 +1603,7 @@
 					},
 					{
 						"cell_type": "markdown",
+						"metadata": {},
 						"source": [
 							"## Train the Model\n",
 							"\n",
@@ -1586,6 +1612,7 @@
 					},
 					{
 						"cell_type": "code",
+						"metadata": {},
 						"source": [
 							"## Create a new LR object for the model\n",
 							"logReg = LogisticRegression(maxIter=10, regParam=0.3, labelCol = 'tipped')\n",
@@ -1613,6 +1640,7 @@
 					},
 					{
 						"cell_type": "markdown",
+						"metadata": {},
 						"source": [
 							"## Evaluate and Visualize\n",
 							"\n",
@@ -1622,6 +1650,7 @@
 					},
 					{
 						"cell_type": "code",
+						"metadata": {},
 						"source": [
 							"## Plot the ROC curve, no need for pandas as this uses the modelSummary object\n",
 							"modelSummary = lrModel.stages[-1].summary\n",
@@ -1658,6 +1687,102 @@
 			"apiVersion": "2019-06-01-preview",
 			"properties": {},
 			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Notebook 1')]",
+			"type": "Microsoft.Synapse/workspaces/notebooks",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"nbformat": 4,
+				"nbformat_minor": 2,
+				"bigDataPool": {
+					"referenceName": "ws1sparkpool1",
+					"type": "BigDataPoolReference"
+				},
+				"sessionProperties": {
+					"driverMemory": "28g",
+					"driverCores": 4,
+					"executorMemory": "28g",
+					"executorCores": 4,
+					"numExecutors": 2,
+					"conf": {
+						"spark.dynamicAllocation.enabled": "false",
+						"spark.dynamicAllocation.minExecutors": "2",
+						"spark.dynamicAllocation.maxExecutors": "2",
+						"spark.autotune.trackingId": "e2c35b1e-f0f8-40ba-b737-4580953b40b0"
+					}
+				},
+				"metadata": {
+					"saveOutput": true,
+					"enableDebugMode": false,
+					"kernelspec": {
+						"name": "synapse_pyspark",
+						"display_name": "Synapse PySpark"
+					},
+					"language_info": {
+						"name": "python"
+					},
+					"a365ComputeOptions": {
+						"id": "/subscriptions/34ee4d01-fcbb-4649-a377-491b2a66baa8/resourceGroups/JSG-Synapse-Dev-Demo/providers/Microsoft.Synapse/workspaces/jsg2ytbl5v5tdzj2pocws1/bigDataPools/ws1sparkpool1",
+						"name": "ws1sparkpool1",
+						"type": "Spark",
+						"endpoint": "https://jsg2ytbl5v5tdzj2pocws1.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/ws1sparkpool1",
+						"auth": {
+							"type": "AAD",
+							"authResource": "https://dev.azuresynapse.net"
+						},
+						"sparkVersion": "2.4",
+						"nodeCount": 5,
+						"cores": 4,
+						"memory": 28,
+						"automaticScaleJobs": false
+					},
+					"sessionKeepAliveTimeout": 30
+				},
+				"cells": [
+					{
+						"cell_type": "code",
+						"metadata": {
+							"microsoft": {
+								"language": "python"
+							}
+						},
+						"source": [
+							"%%pyspark\r\n",
+							"df = spark.read.load('abfss://public@jsg2ytbl5v5tdzj2poc.dfs.core.windows.net/fares-data.csv', format='csv'\r\n",
+							"If header exists uncomment line below\r\n",
+							", header=True\r\n",
+							")\r\n",
+							"df.write.mode(\"overwrite\").saveAsTable(\"default.jsgsparktable\")"
+						],
+						"outputs": [],
+						"execution_count": 1
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/AzureMLService')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "AzureMLService",
+				"typeProperties": {
+					"subscriptionId": "[parameters('AzureMLService_properties_typeProperties_subscriptionId')]",
+					"resourceGroupName": "[parameters('AzureMLService_properties_typeProperties_resourceGroupName')]",
+					"mlWorkspaceName": "contoso-workspace-demo",
+					"authentication": "MSI"
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
 		}
 	]
 }
