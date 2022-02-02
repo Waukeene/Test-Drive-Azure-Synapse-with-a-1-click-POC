@@ -1,0 +1,10 @@
+{
+	"name": "synapse-ws-sql--jsg4bahowlkdhahgpocws1",
+	"properties": {
+		"privateLinkResourceId": "/subscriptions/34ee4d01-fcbb-4649-a377-491b2a66baa8/resourceGroups/JSG-Synapse-Dev/providers/Microsoft.Synapse/workspaces/jsg4bahowlkdhahgpocws1",
+		"groupId": "sql",
+		"fqdns": [
+			"jsg4bahowlkdhahgpocws1.eef1182f-18aa-43c0-b11f-ed3c491d88a2.sql.azuresynapse.net"
+		]
+	}
+}
