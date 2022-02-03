@@ -1334,7 +1334,7 @@
 						"spark.dynamicAllocation.enabled": "false",
 						"spark.dynamicAllocation.minExecutors": "39",
 						"spark.dynamicAllocation.maxExecutors": "39",
-						"spark.autotune.trackingId": "27a2f47c-173d-4d8b-b429-ab391d5e105f"
+						"spark.autotune.trackingId": "e383fdf4-40b3-4508-bfe9-bd2ee1746901"
 					}
 				},
 				"metadata": {
@@ -1399,7 +1399,7 @@
 							"from pyspark.ml.evaluation import BinaryClassificationEvaluator"
 						],
 						"outputs": [],
-						"execution_count": 1
+						"execution_count": 11
 					},
 					{
 						"cell_type": "markdown",
@@ -1427,7 +1427,7 @@
 							"nyc_tlc_df = nyc_tlc.to_spark_dataframe()"
 						],
 						"outputs": [],
-						"execution_count": 2
+						"execution_count": 12
 					},
 					{
 						"cell_type": "code",
@@ -1437,7 +1437,7 @@
 							"sampled_taxi_df = nyc_tlc_df.sample(True, 0.001, seed=1234)"
 						],
 						"outputs": [],
-						"execution_count": 3
+						"execution_count": 13
 					},
 					{
 						"cell_type": "markdown",
@@ -1481,7 +1481,7 @@
 							"plt.show()"
 						],
 						"outputs": [],
-						"execution_count": 4
+						"execution_count": 14
 					},
 					{
 						"cell_type": "markdown",
@@ -1516,7 +1516,7 @@
 							"                                )"
 						],
 						"outputs": [],
-						"execution_count": 5
+						"execution_count": 15
 					},
 					{
 						"cell_type": "markdown",
@@ -1545,7 +1545,7 @@
 							"                                       .filter((taxi_df.tripTimeSecs >= 30) & (taxi_df.tripTimeSecs <= 7200))"
 						],
 						"outputs": [],
-						"execution_count": 6
+						"execution_count": 16
 					},
 					{
 						"cell_type": "markdown",
@@ -1575,7 +1575,7 @@
 							"encoded_final_df = Pipeline(stages=[sI1, en1, sI2, en2]).fit(taxi_featurised_df).transform(taxi_featurised_df)"
 						],
 						"outputs": [],
-						"execution_count": 7
+						"execution_count": 17
 					},
 					{
 						"cell_type": "markdown",
@@ -1599,7 +1599,7 @@
 							"train_data_df, test_data_df = encoded_final_df.randomSplit([trainingFraction, testingFraction], seed=seed)"
 						],
 						"outputs": [],
-						"execution_count": 8
+						"execution_count": 18
 					},
 					{
 						"cell_type": "markdown",
@@ -1636,7 +1636,7 @@
 							"print(\"Area under ROC = %s\" % metrics.areaUnderROC)"
 						],
 						"outputs": [],
-						"execution_count": 9
+						"execution_count": 19
 					},
 					{
 						"cell_type": "markdown",
@@ -1663,7 +1663,7 @@
 							"plt.show()"
 						],
 						"outputs": [],
-						"execution_count": 10
+						"execution_count": 20
 					}
 				]
 			},
@@ -1689,80 +1689,6 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/Notebook 1')]",
-			"type": "Microsoft.Synapse/workspaces/notebooks",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"nbformat": 4,
-				"nbformat_minor": 2,
-				"bigDataPool": {
-					"referenceName": "ws1sparkpool1",
-					"type": "BigDataPoolReference"
-				},
-				"sessionProperties": {
-					"driverMemory": "28g",
-					"driverCores": 4,
-					"executorMemory": "28g",
-					"executorCores": 4,
-					"numExecutors": 2,
-					"conf": {
-						"spark.dynamicAllocation.enabled": "false",
-						"spark.dynamicAllocation.minExecutors": "2",
-						"spark.dynamicAllocation.maxExecutors": "2",
-						"spark.autotune.trackingId": "e2c35b1e-f0f8-40ba-b737-4580953b40b0"
-					}
-				},
-				"metadata": {
-					"saveOutput": true,
-					"enableDebugMode": false,
-					"kernelspec": {
-						"name": "synapse_pyspark",
-						"display_name": "Synapse PySpark"
-					},
-					"language_info": {
-						"name": "python"
-					},
-					"a365ComputeOptions": {
-						"id": "/subscriptions/34ee4d01-fcbb-4649-a377-491b2a66baa8/resourceGroups/JSG-Synapse-Dev-Demo/providers/Microsoft.Synapse/workspaces/jsg2ytbl5v5tdzj2pocws1/bigDataPools/ws1sparkpool1",
-						"name": "ws1sparkpool1",
-						"type": "Spark",
-						"endpoint": "https://jsg2ytbl5v5tdzj2pocws1.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/ws1sparkpool1",
-						"auth": {
-							"type": "AAD",
-							"authResource": "https://dev.azuresynapse.net"
-						},
-						"sparkVersion": "2.4",
-						"nodeCount": 5,
-						"cores": 4,
-						"memory": 28,
-						"automaticScaleJobs": false
-					},
-					"sessionKeepAliveTimeout": 30
-				},
-				"cells": [
-					{
-						"cell_type": "code",
-						"metadata": {
-							"microsoft": {
-								"language": "python"
-							}
-						},
-						"source": [
-							"%%pyspark\r\n",
-							"df = spark.read.load('abfss://public@jsg2ytbl5v5tdzj2poc.dfs.core.windows.net/fares-data.csv', format='csv'\r\n",
-							"If header exists uncomment line below\r\n",
-							", header=True\r\n",
-							")\r\n",
-							"df.write.mode(\"overwrite\").saveAsTable(\"default.jsgsparktable\")"
-						],
-						"outputs": [],
-						"execution_count": 1
-					}
-				]
-			},
-			"dependsOn": []
-		},
-		{
 			"name": "[concat(parameters('workspaceName'), '/AzureMLService')]",
 			"type": "Microsoft.Synapse/workspaces/linkedServices",
 			"apiVersion": "2019-06-01-preview",
@@ -1783,6 +1709,46 @@
 			"dependsOn": [
 				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
 			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Scoring_Wizard_SQLDPool_Demo')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "-- Create a new SQL script to load data_latest.csv into your dedicated SQL Pool\n\nIF NOT EXISTS (SELECT * FROM sys.objects WHERE NAME = 'nyc_taxi' AND TYPE = 'U')\nCREATE TABLE dbo.nyc_taxi\n(\n    tipped int,\n    fareAmount float,\n    paymentType int,\n    passengerCount int,\n    tripDistance float,\n    tripTimeSecs bigint,\n    pickupTimeBin nvarchar(30)\n)\nWITH\n(\n    DISTRIBUTION = ROUND_ROBIN,\n    CLUSTERED COLUMNSTORE INDEX\n)\nGO\n\nCOPY INTO dbo.nyc_taxi\n(tipped 1, fareAmount 2, paymentType 3, passengerCount 4, tripDistance 5, tripTimeSecs 6, pickupTimeBin 7)\nFROM 'https://jsg2ytbl5v5tdzj2poc.blob.core.windows.net/dlsjsgpocfs1/user/trusted-service-user/test_data.csv'\nWITH\n(\n    FILE_TYPE = 'CSV',\n    ROWTERMINATOR='0x0A',\n    FIELDQUOTE = '\"',\n    FIELDTERMINATOR = ',',\n    FIRSTROW = 2\n)\nGO\n\nSELECT TOP 100 * FROM nyc_taxi\nGO",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "jsg2ytbl5v5tdzj2pocws1p1",
+						"poolName": "jsg2ytbl5v5tdzj2pocws1p1"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Scoring_wizard_demo_pt2')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "-- Create a stored procedure for storing the scoring script.\nCREATE PROCEDURE nyc_taxi_procedure\nAS\nBEGIN\n-- Select input scoring data and assign aliases.\nWITH InputData AS\n(\n    SELECT\n        CAST([fareAmount] AS [real]) AS [fareAmount],\n        CAST([paymentType] AS [bigint]) AS [paymentType],\n        CAST([passengerCount] AS [bigint]) AS [passengerCount],\n        CAST([tripDistance] AS [real]) AS [tripDistance],\n        [tripTimeSecs],\n        CAST([pickupTimeBin] AS [varchar]) AS [pickupTimeBin]\n    FROM [dbo].[nyc_taxi]\n)\n-- Using T-SQL Predict command to score machine learning models. \nSELECT *\nFROM PREDICT (MODEL = (SELECT [model] FROM dbo.ml_model_table WHERE [ID] = 'nyc_taxi_tip_predict:1'),\n              DATA = InputData,\n              RUNTIME = ONNX) WITH ([output_label] [bigint])\nEND\nGO\n\n-- Execute the above stored procedure.\nEXEC nyc_taxi_procedure",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "jsg2ytbl5v5tdzj2pocws1p1",
+						"poolName": "jsg2ytbl5v5tdzj2pocws1p1"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
 		}
 	]
 }
