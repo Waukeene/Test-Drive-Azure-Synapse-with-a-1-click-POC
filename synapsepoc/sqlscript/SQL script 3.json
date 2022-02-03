@@ -1,0 +1,17 @@
+{
+	"name": "SQL script 3",
+	"properties": {
+		"content": {
+			"query": "IF NOT EXISTS (SELECT * FROM sys.external_file_formats WHERE name = 'SynapseParquetFormat') \n\tCREATE EXTERNAL FILE FORMAT [SynapseParquetFormat] \n\tWITH ( FORMAT_TYPE = PARQUET)\nGO\n\nIF NOT EXISTS (SELECT * FROM sys.external_data_sources WHERE name = 'dlsjsgpocfs1_jsg2ytbl5v5tdzj2poc_dfs_core_windows_net') \n\tCREATE EXTERNAL DATA SOURCE [dlsjsgpocfs1_jsg2ytbl5v5tdzj2poc_dfs_core_windows_net] \n\tWITH (\n\t\tLOCATION = 'abfss://dlsjsgpocfs1@jsg2ytbl5v5tdzj2poc.dfs.core.windows.net' \n\t)\nGO\n\nCREATE EXTERNAL TABLE jsgsparktable (\n\t[medallion] nvarchar(4000),\n\t[hack_license] nvarchar(4000),\n\t[vendor_id] nvarchar(4000),\n\t[pickup_datetime] nvarchar(4000),\n\t[payment_type] nvarchar(4000),\n\t[fare_amount] nvarchar(4000),\n\t[surcharge] nvarchar(4000),\n\t[mta_tax] nvarchar(4000),\n\t[tip_amount] nvarchar(4000),\n\t[tolls_amount] nvarchar(4000),\n\t[total_amount] nvarchar(4000)\n\t)\n\tWITH (\n\tLOCATION = 'synapse/workspaces/JSG2YTBL5V5TDZJ2POCWS1/warehouse/jsgsparktable/**',\n\tDATA_SOURCE = [dlsjsgpocfs1_jsg2ytbl5v5tdzj2poc_dfs_core_windows_net],\n\tFILE_FORMAT = [SynapseParquetFormat]\n\t)\nGO\n\n\nSELECT TOP 100 * FROM dbo.jsgsparktable\nGO",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "JSG-DB-Serverless",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}
