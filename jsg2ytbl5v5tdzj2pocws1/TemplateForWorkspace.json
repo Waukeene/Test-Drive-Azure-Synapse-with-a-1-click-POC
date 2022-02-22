@@ -11,6 +11,14 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'TripFaresSynapseAnalyticsLinkedService'"
 		},
+		"AzureMLService_properties_typeProperties_subscriptionId": {
+			"type": "string",
+			"defaultValue": "34ee4d01-fcbb-4649-a377-491b2a66baa8"
+		},
+		"AzureMLService_properties_typeProperties_resourceGroupName": {
+			"type": "string",
+			"defaultValue": "devintersection-218-aml-demo"
+		},
 		"HttpServerTripDataLinkedService_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://raw.githubusercontent.com/Azure/Test-Drive-Azure-Synapse-with-a-1-click-POC/main/tripDataAndFaresCSV/trip-data.csv"
@@ -26,29 +34,12 @@
 		"keyVaultLinkedservice_properties_typeProperties_baseUrl": {
 			"type": "string",
 			"defaultValue": "@{concat('https://',linkedService().keyVaultName,'.vault.azure.net/')}"
-		},
-		"AzureMLService_properties_typeProperties_subscriptionId": {
-			"type": "string",
-			"defaultValue": "34ee4d01-fcbb-4649-a377-491b2a66baa8"
-		},
-		"AzureMLService_properties_typeProperties_resourceGroupName": {
-			"type": "string",
-			"defaultValue": "devintersection-218-aml-demo"
 		}
 	},
 	"variables": {
 		"workspaceId": "[concat('Microsoft.Synapse/workspaces/', parameters('workspaceName'))]"
 	},
 	"resources": [
-		{
-			"name": "[concat(parameters('workspaceName'), '/ws1sparkpool1')]",
-			"type": "Microsoft.Synapse/workspaces/bigDataPools",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"annotations": []
-			},
-			"dependsOn": []
-		},
 		{
 			"name": "[concat(parameters('workspaceName'), '/TripFaresDataPipeline')]",
 			"type": "Microsoft.Synapse/workspaces/pipelines",
@@ -623,8 +614,7 @@
 			"properties": {
 				"linkedServiceName": {
 					"referenceName": "TripFaresSynapseAnalyticsLinkedService",
-					"type": "LinkedServiceReference",
-					"parameters": {}
+					"type": "LinkedServiceReference"
 				},
 				"annotations": [],
 				"type": "AzureSqlDWTable",
@@ -1063,6 +1053,28 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('workspaceName'), '/AzureMLService')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "AzureMLService",
+				"typeProperties": {
+					"subscriptionId": "[parameters('AzureMLService_properties_typeProperties_subscriptionId')]",
+					"resourceGroupName": "[parameters('AzureMLService_properties_typeProperties_resourceGroupName')]",
+					"mlWorkspaceName": "contoso-workspace-demo",
+					"authentication": "MSI"
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('workspaceName'), '/HttpServerTripDataLinkedService')]",
 			"type": "Microsoft.Synapse/workspaces/linkedServices",
 			"apiVersion": "2019-06-01-preview",
@@ -1315,401 +1327,64 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/Data Exploration and ML Modeling - NYC taxi predict using Spark MLlib')]",
-			"type": "Microsoft.Synapse/workspaces/notebooks",
+			"name": "[concat(parameters('workspaceName'), '/SQL script 1')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
-				"nbformat": 4,
-				"nbformat_minor": 2,
-				"bigDataPool": {
-					"referenceName": "ws1sparkpool1",
-					"type": "BigDataPoolReference"
+				"content": {
+					"query": "\n -- TODO: Set parameter values here \n\n EXECUTE [dbo].[nyc_taxi_procedure]\n",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "jsg2ytbl5v5tdzj2pocws1p1",
+						"poolName": "jsg2ytbl5v5tdzj2pocws1p1"
+					},
+					"resultLimit": 5000
 				},
-				"sessionProperties": {
-					"driverMemory": "28g",
-					"driverCores": 4,
-					"executorMemory": "28g",
-					"executorCores": 4,
-					"numExecutors": 39,
-					"conf": {
-						"spark.dynamicAllocation.enabled": "false",
-						"spark.dynamicAllocation.minExecutors": "39",
-						"spark.dynamicAllocation.maxExecutors": "39",
-						"spark.autotune.trackingId": "e383fdf4-40b3-4508-bfe9-bd2ee1746901"
-					}
-				},
-				"metadata": {
-					"saveOutput": true,
-					"enableDebugMode": false,
-					"kernelspec": {
-						"name": "synapse_pyspark",
-						"display_name": "Synapse PySpark"
-					},
-					"language_info": {
-						"name": "python"
-					},
-					"a365ComputeOptions": {
-						"id": "/subscriptions/34ee4d01-fcbb-4649-a377-491b2a66baa8/resourceGroups/JSG-Synapse-Dev-Demo/providers/Microsoft.Synapse/workspaces/jsg2ytbl5v5tdzj2pocws1/bigDataPools/ws1sparkpool1",
-						"name": "ws1sparkpool1",
-						"type": "Spark",
-						"endpoint": "https://jsg2ytbl5v5tdzj2pocws1.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/ws1sparkpool1",
-						"auth": {
-							"type": "AAD",
-							"authResource": "https://dev.azuresynapse.net"
-						},
-						"sparkVersion": "2.4",
-						"nodeCount": 5,
-						"cores": 4,
-						"memory": 28,
-						"automaticScaleJobs": false
-					},
-					"sessionKeepAliveTimeout": 30
-				},
-				"cells": [
-					{
-						"cell_type": "markdown",
-						"metadata": {},
-						"source": [
-							"# Predict NYC Taxi Tips using Spark ML and Azure Open Datasets\n",
-							"\n",
-							"The notebook ingests, visualizes, prepares and then trains a model based on an Open Dataset that tracks NYC Yellow Taxi trips and various attributes around them.\n",
-							"The goal is to predict for a given trip whether there will be a tip or not.\n",
-							"\n",
-							" https://docs.microsoft.com/en-us/azure/synapse-analytics/spark/apache-spark-machine-learning-mllib-notebook\n",
-							""
-						]
-					},
-					{
-						"cell_type": "code",
-						"metadata": {},
-						"source": [
-							"import matplotlib.pyplot as plt\n",
-							"\n",
-							"from pyspark.sql.functions import unix_timestamp\n",
-							"\n",
-							"from pyspark.sql import SparkSession\n",
-							"from pyspark.sql.types import *\n",
-							"from pyspark.sql.functions import *\n",
-							"\n",
-							"from pyspark.ml import Pipeline\n",
-							"from pyspark.ml import PipelineModel\n",
-							"from pyspark.ml.feature import RFormula\n",
-							"from pyspark.ml.feature import OneHotEncoder, StringIndexer, VectorIndexer\n",
-							"from pyspark.ml.classification import LogisticRegression\n",
-							"from pyspark.mllib.evaluation import BinaryClassificationMetrics\n",
-							"from pyspark.ml.evaluation import BinaryClassificationEvaluator"
-						],
-						"outputs": [],
-						"execution_count": 11
-					},
-					{
-						"cell_type": "markdown",
-						"metadata": {},
-						"source": [
-							"## Ingest Data¶ \n",
-							"\n",
-							"Get a sample data of nyc yellow taxi to make it faster/easier to evaluate different approaches to prep for the modelling phase later in the notebook."
-						]
-					},
-					{
-						"cell_type": "code",
-						"metadata": {},
-						"source": [
-							"# Import NYC yellow cab data from Azure Open Datasets\n",
-							"from azureml.opendatasets import NycTlcYellow\n",
-							"\n",
-							"from datetime import datetime\n",
-							"from dateutil import parser\n",
-							"\n",
-							"end_date = parser.parse('2018-05-08 00:00:00')\n",
-							"start_date = parser.parse('2018-05-01 00:00:00')\n",
-							"\n",
-							"nyc_tlc = NycTlcYellow(start_date=start_date, end_date=end_date)\n",
-							"nyc_tlc_df = nyc_tlc.to_spark_dataframe()"
-						],
-						"outputs": [],
-						"execution_count": 12
-					},
-					{
-						"cell_type": "code",
-						"metadata": {},
-						"source": [
-							"#To make development easier, faster and less expensive downsample for now\n",
-							"sampled_taxi_df = nyc_tlc_df.sample(True, 0.001, seed=1234)"
-						],
-						"outputs": [],
-						"execution_count": 13
-					},
-					{
-						"cell_type": "markdown",
-						"metadata": {},
-						"source": [
-							"## Exploratory Data Analysis\n",
-							"\n",
-							"Look at the data and evaluate its suitability for use in a model, do this via some basic charts focussed on tip values and relationships."
-						]
-					},
-					{
-						"cell_type": "code",
-						"metadata": {},
-						"source": [
-							"#The charting package needs a Pandas dataframe or numpy array do the conversion\n",
-							"sampled_taxi_pd_df = sampled_taxi_df.toPandas()\n",
-							"\n",
-							"# Look at tips by amount count histogram\n",
-							"ax1 = sampled_taxi_pd_df['tipAmount'].plot(kind='hist', bins=25, facecolor='lightblue')\n",
-							"ax1.set_title('Tip amount distribution')\n",
-							"ax1.set_xlabel('Tip Amount ($)')\n",
-							"ax1.set_ylabel('Counts')\n",
-							"plt.suptitle('')\n",
-							"plt.show()\n",
-							"\n",
-							"# How many passengers tip'd by various amounts\n",
-							"ax2 = sampled_taxi_pd_df.boxplot(column=['tipAmount'], by=['passengerCount'])\n",
-							"ax2.set_title('Tip amount by Passenger count')\n",
-							"ax2.set_xlabel('Passenger count') \n",
-							"ax2.set_ylabel('Tip Amount ($)')\n",
-							"plt.suptitle('')\n",
-							"plt.show()\n",
-							"\n",
-							"# Look at the relationship between fare and tip amounts\n",
-							"ax = sampled_taxi_pd_df.plot(kind='scatter', x= 'fareAmount', y = 'tipAmount', c='blue', alpha = 0.10, s=2.5*(sampled_taxi_pd_df['passengerCount']))\n",
-							"ax.set_title('Tip amount by Fare amount')\n",
-							"ax.set_xlabel('Fare Amount ($)')\n",
-							"ax.set_ylabel('Tip Amount ($)')\n",
-							"plt.axis([-2, 80, -2, 20])\n",
-							"plt.suptitle('')\n",
-							"plt.show()"
-						],
-						"outputs": [],
-						"execution_count": 14
-					},
-					{
-						"cell_type": "markdown",
-						"metadata": {},
-						"source": [
-							"## Data Prep and Featurization\n",
-							"\n",
-							"It's clear from the visualizations above that there are a bunch of outliers in the data. These will need to be filtered out in addition there are extra variables that are not going to be useful in the model we build at the end.\n",
-							"\n",
-							"Finally there is a need to create some new (derived) variables that will work better with the model.\n",
-							""
-						]
-					},
-					{
-						"cell_type": "code",
-						"metadata": {},
-						"source": [
-							"taxi_df = sampled_taxi_df.select('totalAmount', 'fareAmount', 'tipAmount', 'paymentType', 'rateCodeId', 'passengerCount'\\\n",
-							"                                , 'tripDistance', 'tpepPickupDateTime', 'tpepDropoffDateTime'\\\n",
-							"                                , date_format('tpepPickupDateTime', 'hh').alias('pickupHour')\\\n",
-							"                                , date_format('tpepPickupDateTime', 'EEEE').alias('weekdayString')\\\n",
-							"                                , (unix_timestamp(col('tpepDropoffDateTime')) - unix_timestamp(col('tpepPickupDateTime'))).alias('tripTimeSecs')\\\n",
-							"                                , (when(col('tipAmount') > 0, 1).otherwise(0)).alias('tipped')\n",
-							"                                )\\\n",
-							"                        .filter((sampled_taxi_df.passengerCount > 0) & (sampled_taxi_df.passengerCount < 8)\\\n",
-							"                                & (sampled_taxi_df.tipAmount >= 0) & (sampled_taxi_df.tipAmount <= 25)\\\n",
-							"                                & (sampled_taxi_df.fareAmount >= 1) & (sampled_taxi_df.fareAmount <= 250)\\\n",
-							"                                & (sampled_taxi_df.tipAmount < sampled_taxi_df.fareAmount)\\\n",
-							"                                & (sampled_taxi_df.tripDistance > 0) & (sampled_taxi_df.tripDistance <= 100)\\\n",
-							"                                & (sampled_taxi_df.rateCodeId <= 5)\n",
-							"                                & (sampled_taxi_df.paymentType.isin({\"1\", \"2\"}))\n",
-							"                                )"
-						],
-						"outputs": [],
-						"execution_count": 15
-					},
-					{
-						"cell_type": "markdown",
-						"metadata": {},
-						"source": [
-							"## Data Prep and Featurization Part 2\n",
-							"\n",
-							"Having created new variables its now possible to drop the columns they were derived from so that the dataframe that goes into the model is the smallest in terms of number of variables, that is required.\n",
-							"\n",
-							"Also create some more features based on new columns from the first round.\n",
-							""
-						]
-					},
-					{
-						"cell_type": "code",
-						"metadata": {},
-						"source": [
-							"taxi_featurised_df = taxi_df.select('totalAmount', 'fareAmount', 'tipAmount', 'paymentType', 'passengerCount'\\\n",
-							"                                                , 'tripDistance', 'weekdayString', 'pickupHour','tripTimeSecs','tipped'\\\n",
-							"                                                , when((taxi_df.pickupHour <= 6) | (taxi_df.pickupHour >= 20),\"Night\")\\\n",
-							"                                                .when((taxi_df.pickupHour >= 7) & (taxi_df.pickupHour <= 10), \"AMRush\")\\\n",
-							"                                                .when((taxi_df.pickupHour >= 11) & (taxi_df.pickupHour <= 15), \"Afternoon\")\\\n",
-							"                                                .when((taxi_df.pickupHour >= 16) & (taxi_df.pickupHour <= 19), \"PMRush\")\\\n",
-							"                                                .otherwise(0).alias('trafficTimeBins')\n",
-							"                                              )\\\n",
-							"                                       .filter((taxi_df.tripTimeSecs >= 30) & (taxi_df.tripTimeSecs <= 7200))"
-						],
-						"outputs": [],
-						"execution_count": 16
-					},
-					{
-						"cell_type": "markdown",
-						"metadata": {},
-						"source": [
-							"## Encoding\n",
-							"\n",
-							"Different ML algorithms support different types of input, for this example Logistic Regression is being used for Binary Classification. This means that any Categorical (string) variables must be converted to numbers.\n",
-							"\n",
-							"The process is not as simple as a \"map\" style function as the relationship between the numbers can introduce a bias in the resulting model, the approach is to index the variable and then encode using a std approach called One Hot Encoding.\n",
-							"\n",
-							"This approach requires the encoder to \"learn\"/fit a model over the data in the Spark instance and then transform based on what was learnt.\n",
-							""
-						]
-					},
-					{
-						"cell_type": "code",
-						"metadata": {},
-						"source": [
-							"# The sample uses an algorithm that only works with numeric features convert them so they can be consumed\n",
-							"sI1 = StringIndexer(inputCol=\"trafficTimeBins\", outputCol=\"trafficTimeBinsIndex\"); \n",
-							"en1 = OneHotEncoder(dropLast=False, inputCol=\"trafficTimeBinsIndex\", outputCol=\"trafficTimeBinsVec\");\n",
-							"sI2 = StringIndexer(inputCol=\"weekdayString\", outputCol=\"weekdayIndex\"); \n",
-							"en2 = OneHotEncoder(dropLast=False, inputCol=\"weekdayIndex\", outputCol=\"weekdayVec\");\n",
-							"\n",
-							"# Create a new dataframe that has had the encodings applied\n",
-							"encoded_final_df = Pipeline(stages=[sI1, en1, sI2, en2]).fit(taxi_featurised_df).transform(taxi_featurised_df)"
-						],
-						"outputs": [],
-						"execution_count": 17
-					},
-					{
-						"cell_type": "markdown",
-						"metadata": {},
-						"source": [
-							"## Generation of Testing and Training Data Sets\n",
-							"Simple split, 70% for training and 30% for testing the model. Playing with this ratio may result in different models.\n",
-							""
-						]
-					},
-					{
-						"cell_type": "code",
-						"metadata": {},
-						"source": [
-							"# Decide on the split between training and testing data from the dataframe \n",
-							"trainingFraction = 0.7\n",
-							"testingFraction = (1-trainingFraction)\n",
-							"seed = 1234\n",
-							"\n",
-							"# Split the dataframe into test and training dataframes\n",
-							"train_data_df, test_data_df = encoded_final_df.randomSplit([trainingFraction, testingFraction], seed=seed)"
-						],
-						"outputs": [],
-						"execution_count": 18
-					},
-					{
-						"cell_type": "markdown",
-						"metadata": {},
-						"source": [
-							"## Train the Model\n",
-							"\n",
-							"Train the Logistic Regression model and then evaluate it using Area under ROC as the metric."
-						]
-					},
-					{
-						"cell_type": "code",
-						"metadata": {},
-						"source": [
-							"## Create a new LR object for the model\n",
-							"logReg = LogisticRegression(maxIter=10, regParam=0.3, labelCol = 'tipped')\n",
-							"\n",
-							"## The formula for the model\n",
-							"classFormula = RFormula(formula=\"tipped ~ pickupHour + weekdayVec + passengerCount + tripTimeSecs + tripDistance + fareAmount + paymentType+ trafficTimeBinsVec\")\n",
-							"\n",
-							"## Undertake training and create an LR model\n",
-							"lrModel = Pipeline(stages=[classFormula, logReg]).fit(train_data_df)\n",
-							"\n",
-							"## Saving the model is optional but its another for of inter session cache\n",
-							"datestamp = datetime.now().strftime('%m-%d-%Y-%s');\n",
-							"fileName = \"lrModel_\" + datestamp;\n",
-							"logRegDirfilename = fileName;\n",
-							"lrModel.save(logRegDirfilename)\n",
-							"\n",
-							"## Predict tip 1/0 (yes/no) on the test dataset, evaluation using AUROC\n",
-							"predictions = lrModel.transform(test_data_df)\n",
-							"predictionAndLabels = predictions.select(\"label\",\"prediction\").rdd\n",
-							"metrics = BinaryClassificationMetrics(predictionAndLabels)\n",
-							"print(\"Area under ROC = %s\" % metrics.areaUnderROC)"
-						],
-						"outputs": [],
-						"execution_count": 19
-					},
-					{
-						"cell_type": "markdown",
-						"metadata": {},
-						"source": [
-							"## Evaluate and Visualize\n",
-							"\n",
-							"Plot the actual curve to develop a better understanding of the model.\n",
-							""
-						]
-					},
-					{
-						"cell_type": "code",
-						"metadata": {},
-						"source": [
-							"## Plot the ROC curve, no need for pandas as this uses the modelSummary object\n",
-							"modelSummary = lrModel.stages[-1].summary\n",
-							"\n",
-							"plt.plot([0, 1], [0, 1], 'r--')\n",
-							"plt.plot(modelSummary.roc.select('FPR').collect(),\n",
-							"         modelSummary.roc.select('TPR').collect())\n",
-							"plt.xlabel('False Positive Rate')\n",
-							"plt.ylabel('True Positive Rate')\n",
-							"plt.show()"
-						],
-						"outputs": [],
-						"execution_count": 20
-					}
-				]
+				"type": "SqlQuery"
 			},
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/jsg2ytbl5v5tdzj2pocws1p1')]",
-			"type": "Microsoft.Synapse/workspaces/sqlPools",
+			"name": "[concat(parameters('workspaceName'), '/SQL script 2')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
-				"collation": "SQL_Latin1_General_CP1_CI_AS",
-				"maxSizeBytes": 263882790666240,
-				"annotations": []
+				"content": {
+					"query": "SET ANSI_NULLS ON\nGO\nSET QUOTED_IDENTIFIER ON\nGO\n\nCREATE PROC [dbo].[nyc_taxi_procedure] AS\nBEGIN\n-- Select input scoring data and assign aliases.\nWITH InputData AS\n(\n    SELECT\n        CAST([fareAmount] AS [real]) AS [fareAmount],\n        CAST([paymentType] AS [bigint]) AS [paymentType],\n        CAST([passengerCount] AS [bigint]) AS [passengerCount],\n        CAST([tripDistance] AS [real]) AS [tripDistance],\n        [tripTimeSecs],\n        CAST([pickupTimeBin] AS [varchar]) AS [pickupTimeBin]\n    FROM [dbo].[nyc_taxi]\n)\n-- Using T-SQL Predict command to score machine learning models. \nSELECT *\nFROM PREDICT (MODEL = (SELECT [model] FROM dbo.ml_model_table WHERE [ID] = 'nyc_taxi_tip_predict:1'),\n              DATA = InputData,\n              RUNTIME = ONNX) WITH ([output_label] [bigint])\nEND\nGO",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "jsg2ytbl5v5tdzj2pocws1p1",
+						"poolName": "jsg2ytbl5v5tdzj2pocws1p1"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
 			},
-			"dependsOn": [],
-			"location": "southcentralus"
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/default')]",
-			"type": "Microsoft.Synapse/workspaces/managedVirtualNetworks",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {},
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/AzureMLService')]",
-			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"name": "[concat(parameters('workspaceName'), '/SQL script 3')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
-				"annotations": [],
-				"type": "AzureMLService",
-				"typeProperties": {
-					"subscriptionId": "[parameters('AzureMLService_properties_typeProperties_subscriptionId')]",
-					"resourceGroupName": "[parameters('AzureMLService_properties_typeProperties_resourceGroupName')]",
-					"mlWorkspaceName": "contoso-workspace-demo",
-					"authentication": "MSI"
+				"content": {
+					"query": "IF NOT EXISTS (SELECT * FROM sys.external_file_formats WHERE name = 'SynapseParquetFormat') \n\tCREATE EXTERNAL FILE FORMAT [SynapseParquetFormat] \n\tWITH ( FORMAT_TYPE = PARQUET)\nGO\n\nIF NOT EXISTS (SELECT * FROM sys.external_data_sources WHERE name = 'dlsjsgpocfs1_jsg2ytbl5v5tdzj2poc_dfs_core_windows_net') \n\tCREATE EXTERNAL DATA SOURCE [dlsjsgpocfs1_jsg2ytbl5v5tdzj2poc_dfs_core_windows_net] \n\tWITH (\n\t\tLOCATION = 'abfss://dlsjsgpocfs1@jsg2ytbl5v5tdzj2poc.dfs.core.windows.net' \n\t)\nGO\n\nCREATE EXTERNAL TABLE jsgsparktable (\n\t[medallion] nvarchar(4000),\n\t[hack_license] nvarchar(4000),\n\t[vendor_id] nvarchar(4000),\n\t[pickup_datetime] nvarchar(4000),\n\t[payment_type] nvarchar(4000),\n\t[fare_amount] nvarchar(4000),\n\t[surcharge] nvarchar(4000),\n\t[mta_tax] nvarchar(4000),\n\t[tip_amount] nvarchar(4000),\n\t[tolls_amount] nvarchar(4000),\n\t[total_amount] nvarchar(4000)\n\t)\n\tWITH (\n\tLOCATION = 'synapse/workspaces/JSG2YTBL5V5TDZJ2POCWS1/warehouse/jsgsparktable/**',\n\tDATA_SOURCE = [dlsjsgpocfs1_jsg2ytbl5v5tdzj2poc_dfs_core_windows_net],\n\tFILE_FORMAT = [SynapseParquetFormat]\n\t)\nGO\n\n\nSELECT TOP 100 * FROM dbo.jsgsparktable\nGO",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "JSG-DB-Serverless",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
 				},
-				"connectVia": {
-					"referenceName": "AutoResolveIntegrationRuntime",
-					"type": "IntegrationRuntimeReference"
-				}
+				"type": "SqlQuery"
 			},
-			"dependsOn": [
-				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
-			]
+			"dependsOn": []
 		},
 		{
 			"name": "[concat(parameters('workspaceName'), '/Scoring_Wizard_SQLDPool_Demo')]",
@@ -1752,46 +1427,6 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/SQL script 1')]",
-			"type": "Microsoft.Synapse/workspaces/sqlscripts",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"content": {
-					"query": "\n -- TODO: Set parameter values here \n\n EXECUTE [dbo].[nyc_taxi_procedure]\n",
-					"metadata": {
-						"language": "sql"
-					},
-					"currentConnection": {
-						"databaseName": "jsg2ytbl5v5tdzj2pocws1p1",
-						"poolName": "jsg2ytbl5v5tdzj2pocws1p1"
-					},
-					"resultLimit": 5000
-				},
-				"type": "SqlQuery"
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/SQL script 2')]",
-			"type": "Microsoft.Synapse/workspaces/sqlscripts",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"content": {
-					"query": "SET ANSI_NULLS ON\nGO\nSET QUOTED_IDENTIFIER ON\nGO\n\nCREATE PROC [dbo].[nyc_taxi_procedure] AS\nBEGIN\n-- Select input scoring data and assign aliases.\nWITH InputData AS\n(\n    SELECT\n        CAST([fareAmount] AS [real]) AS [fareAmount],\n        CAST([paymentType] AS [bigint]) AS [paymentType],\n        CAST([passengerCount] AS [bigint]) AS [passengerCount],\n        CAST([tripDistance] AS [real]) AS [tripDistance],\n        [tripTimeSecs],\n        CAST([pickupTimeBin] AS [varchar]) AS [pickupTimeBin]\n    FROM [dbo].[nyc_taxi]\n)\n-- Using T-SQL Predict command to score machine learning models. \nSELECT *\nFROM PREDICT (MODEL = (SELECT [model] FROM dbo.ml_model_table WHERE [ID] = 'nyc_taxi_tip_predict:1'),\n              DATA = InputData,\n              RUNTIME = ONNX) WITH ([output_label] [bigint])\nEND\nGO",
-					"metadata": {
-						"language": "sql"
-					},
-					"currentConnection": {
-						"databaseName": "jsg2ytbl5v5tdzj2pocws1p1",
-						"poolName": "jsg2ytbl5v5tdzj2pocws1p1"
-					},
-					"resultLimit": 5000
-				},
-				"type": "SqlQuery"
-			},
-			"dependsOn": []
-		},
-		{
 			"name": "[concat(parameters('workspaceName'), '/Create Spark Table with NYC Taxi Data')]",
 			"type": "Microsoft.Synapse/workspaces/notebooks",
 			"apiVersion": "2019-06-01-preview",
@@ -1812,7 +1447,7 @@
 						"spark.dynamicAllocation.enabled": "false",
 						"spark.dynamicAllocation.minExecutors": "2",
 						"spark.dynamicAllocation.maxExecutors": "2",
-						"spark.autotune.trackingId": "09804f4b-ca52-47c6-b2d6-520f8e119b4d"
+						"spark.autotune.trackingId": "d67727b0-aef1-4b18-a13c-6a3fc8ea0af2"
 					}
 				},
 				"metadata": {
@@ -1837,8 +1472,7 @@
 						"sparkVersion": "2.4",
 						"nodeCount": 5,
 						"cores": 4,
-						"memory": 28,
-						"automaticScaleJobs": false
+						"memory": 28
 					},
 					"sessionKeepAliveTimeout": 30
 				},
@@ -1859,7 +1493,6 @@
 					},
 					{
 						"cell_type": "code",
-						"metadata": {},
 						"source": [
 							"from azureml.opendatasets import NycTlcYellow\r\n",
 							"from datetime import datetime\r\n",
@@ -2025,24 +1658,874 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/SQL script 3')]",
-			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"name": "[concat(parameters('workspaceName'), '/Data Exploration and ML Modeling - NYC taxi predict using Spark MLlib')]",
+			"type": "Microsoft.Synapse/workspaces/notebooks",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
-				"content": {
-					"query": "IF NOT EXISTS (SELECT * FROM sys.external_file_formats WHERE name = 'SynapseParquetFormat') \n\tCREATE EXTERNAL FILE FORMAT [SynapseParquetFormat] \n\tWITH ( FORMAT_TYPE = PARQUET)\nGO\n\nIF NOT EXISTS (SELECT * FROM sys.external_data_sources WHERE name = 'dlsjsgpocfs1_jsg2ytbl5v5tdzj2poc_dfs_core_windows_net') \n\tCREATE EXTERNAL DATA SOURCE [dlsjsgpocfs1_jsg2ytbl5v5tdzj2poc_dfs_core_windows_net] \n\tWITH (\n\t\tLOCATION = 'abfss://dlsjsgpocfs1@jsg2ytbl5v5tdzj2poc.dfs.core.windows.net' \n\t)\nGO\n\nCREATE EXTERNAL TABLE jsgsparktable (\n\t[medallion] nvarchar(4000),\n\t[hack_license] nvarchar(4000),\n\t[vendor_id] nvarchar(4000),\n\t[pickup_datetime] nvarchar(4000),\n\t[payment_type] nvarchar(4000),\n\t[fare_amount] nvarchar(4000),\n\t[surcharge] nvarchar(4000),\n\t[mta_tax] nvarchar(4000),\n\t[tip_amount] nvarchar(4000),\n\t[tolls_amount] nvarchar(4000),\n\t[total_amount] nvarchar(4000)\n\t)\n\tWITH (\n\tLOCATION = 'synapse/workspaces/JSG2YTBL5V5TDZJ2POCWS1/warehouse/jsgsparktable/**',\n\tDATA_SOURCE = [dlsjsgpocfs1_jsg2ytbl5v5tdzj2poc_dfs_core_windows_net],\n\tFILE_FORMAT = [SynapseParquetFormat]\n\t)\nGO\n\n\nSELECT TOP 100 * FROM dbo.jsgsparktable\nGO",
-					"metadata": {
-						"language": "sql"
-					},
-					"currentConnection": {
-						"databaseName": "JSG-DB-Serverless",
-						"poolName": "Built-in"
-					},
-					"resultLimit": 5000
+				"nbformat": 4,
+				"nbformat_minor": 2,
+				"bigDataPool": {
+					"referenceName": "ws1sparkpool1",
+					"type": "BigDataPoolReference"
 				},
-				"type": "SqlQuery"
+				"sessionProperties": {
+					"driverMemory": "28g",
+					"driverCores": 4,
+					"executorMemory": "28g",
+					"executorCores": 4,
+					"numExecutors": 39,
+					"conf": {
+						"spark.dynamicAllocation.enabled": "false",
+						"spark.dynamicAllocation.minExecutors": "39",
+						"spark.dynamicAllocation.maxExecutors": "39",
+						"spark.autotune.trackingId": "7d2db213-344e-425d-869c-fa50d576c224"
+					}
+				},
+				"metadata": {
+					"saveOutput": true,
+					"enableDebugMode": false,
+					"kernelspec": {
+						"name": "synapse_pyspark",
+						"display_name": "Synapse PySpark"
+					},
+					"language_info": {
+						"name": "python"
+					},
+					"a365ComputeOptions": {
+						"id": "/subscriptions/34ee4d01-fcbb-4649-a377-491b2a66baa8/resourceGroups/JSG-Synapse-Dev-Demo/providers/Microsoft.Synapse/workspaces/jsg2ytbl5v5tdzj2pocws1/bigDataPools/ws1sparkpool1",
+						"name": "ws1sparkpool1",
+						"type": "Spark",
+						"endpoint": "https://jsg2ytbl5v5tdzj2pocws1.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/ws1sparkpool1",
+						"auth": {
+							"type": "AAD",
+							"authResource": "https://dev.azuresynapse.net"
+						},
+						"sparkVersion": "2.4",
+						"nodeCount": 5,
+						"cores": 4,
+						"memory": 28
+					},
+					"sessionKeepAliveTimeout": 30
+				},
+				"cells": [
+					{
+						"cell_type": "markdown",
+						"source": [
+							"# Predict NYC Taxi Tips using Spark ML and Azure Open Datasets\n",
+							"\n",
+							"The notebook ingests, visualizes, prepares and then trains a model based on an Open Dataset that tracks NYC Yellow Taxi trips and various attributes around them.\n",
+							"The goal is to predict for a given trip whether there will be a tip or not.\n",
+							"\n",
+							" https://docs.microsoft.com/en-us/azure/synapse-analytics/spark/apache-spark-machine-learning-mllib-notebook\n",
+							""
+						]
+					},
+					{
+						"cell_type": "code",
+						"source": [
+							"import matplotlib.pyplot as plt\n",
+							"\n",
+							"from pyspark.sql.functions import unix_timestamp\n",
+							"\n",
+							"from pyspark.sql import SparkSession\n",
+							"from pyspark.sql.types import *\n",
+							"from pyspark.sql.functions import *\n",
+							"\n",
+							"from pyspark.ml import Pipeline\n",
+							"from pyspark.ml import PipelineModel\n",
+							"from pyspark.ml.feature import RFormula\n",
+							"from pyspark.ml.feature import OneHotEncoder, StringIndexer, VectorIndexer\n",
+							"from pyspark.ml.classification import LogisticRegression\n",
+							"from pyspark.mllib.evaluation import BinaryClassificationMetrics\n",
+							"from pyspark.ml.evaluation import BinaryClassificationEvaluator"
+						],
+						"outputs": [],
+						"execution_count": 11
+					},
+					{
+						"cell_type": "markdown",
+						"source": [
+							"## Ingest Data¶ \n",
+							"\n",
+							"Get a sample data of nyc yellow taxi to make it faster/easier to evaluate different approaches to prep for the modelling phase later in the notebook."
+						]
+					},
+					{
+						"cell_type": "code",
+						"source": [
+							"# Import NYC yellow cab data from Azure Open Datasets\n",
+							"from azureml.opendatasets import NycTlcYellow\n",
+							"\n",
+							"from datetime import datetime\n",
+							"from dateutil import parser\n",
+							"\n",
+							"end_date = parser.parse('2018-05-08 00:00:00')\n",
+							"start_date = parser.parse('2018-05-01 00:00:00')\n",
+							"\n",
+							"nyc_tlc = NycTlcYellow(start_date=start_date, end_date=end_date)\n",
+							"nyc_tlc_df = nyc_tlc.to_spark_dataframe()"
+						],
+						"outputs": [],
+						"execution_count": 12
+					},
+					{
+						"cell_type": "code",
+						"source": [
+							"#To make development easier, faster and less expensive downsample for now\n",
+							"sampled_taxi_df = nyc_tlc_df.sample(True, 0.001, seed=1234)"
+						],
+						"outputs": [],
+						"execution_count": 13
+					},
+					{
+						"cell_type": "markdown",
+						"source": [
+							"## Exploratory Data Analysis\n",
+							"\n",
+							"Look at the data and evaluate its suitability for use in a model, do this via some basic charts focussed on tip values and relationships."
+						]
+					},
+					{
+						"cell_type": "code",
+						"source": [
+							"#The charting package needs a Pandas dataframe or numpy array do the conversion\n",
+							"sampled_taxi_pd_df = sampled_taxi_df.toPandas()\n",
+							"\n",
+							"# Look at tips by amount count histogram\n",
+							"ax1 = sampled_taxi_pd_df['tipAmount'].plot(kind='hist', bins=25, facecolor='lightblue')\n",
+							"ax1.set_title('Tip amount distribution')\n",
+							"ax1.set_xlabel('Tip Amount ($)')\n",
+							"ax1.set_ylabel('Counts')\n",
+							"plt.suptitle('')\n",
+							"plt.show()\n",
+							"\n",
+							"# How many passengers tip'd by various amounts\n",
+							"ax2 = sampled_taxi_pd_df.boxplot(column=['tipAmount'], by=['passengerCount'])\n",
+							"ax2.set_title('Tip amount by Passenger count')\n",
+							"ax2.set_xlabel('Passenger count') \n",
+							"ax2.set_ylabel('Tip Amount ($)')\n",
+							"plt.suptitle('')\n",
+							"plt.show()\n",
+							"\n",
+							"# Look at the relationship between fare and tip amounts\n",
+							"ax = sampled_taxi_pd_df.plot(kind='scatter', x= 'fareAmount', y = 'tipAmount', c='blue', alpha = 0.10, s=2.5*(sampled_taxi_pd_df['passengerCount']))\n",
+							"ax.set_title('Tip amount by Fare amount')\n",
+							"ax.set_xlabel('Fare Amount ($)')\n",
+							"ax.set_ylabel('Tip Amount ($)')\n",
+							"plt.axis([-2, 80, -2, 20])\n",
+							"plt.suptitle('')\n",
+							"plt.show()"
+						],
+						"outputs": [],
+						"execution_count": 14
+					},
+					{
+						"cell_type": "markdown",
+						"source": [
+							"## Data Prep and Featurization\n",
+							"\n",
+							"It's clear from the visualizations above that there are a bunch of outliers in the data. These will need to be filtered out in addition there are extra variables that are not going to be useful in the model we build at the end.\n",
+							"\n",
+							"Finally there is a need to create some new (derived) variables that will work better with the model.\n",
+							""
+						]
+					},
+					{
+						"cell_type": "code",
+						"source": [
+							"taxi_df = sampled_taxi_df.select('totalAmount', 'fareAmount', 'tipAmount', 'paymentType', 'rateCodeId', 'passengerCount'\\\n",
+							"                                , 'tripDistance', 'tpepPickupDateTime', 'tpepDropoffDateTime'\\\n",
+							"                                , date_format('tpepPickupDateTime', 'hh').alias('pickupHour')\\\n",
+							"                                , date_format('tpepPickupDateTime', 'EEEE').alias('weekdayString')\\\n",
+							"                                , (unix_timestamp(col('tpepDropoffDateTime')) - unix_timestamp(col('tpepPickupDateTime'))).alias('tripTimeSecs')\\\n",
+							"                                , (when(col('tipAmount') > 0, 1).otherwise(0)).alias('tipped')\n",
+							"                                )\\\n",
+							"                        .filter((sampled_taxi_df.passengerCount > 0) & (sampled_taxi_df.passengerCount < 8)\\\n",
+							"                                & (sampled_taxi_df.tipAmount >= 0) & (sampled_taxi_df.tipAmount <= 25)\\\n",
+							"                                & (sampled_taxi_df.fareAmount >= 1) & (sampled_taxi_df.fareAmount <= 250)\\\n",
+							"                                & (sampled_taxi_df.tipAmount < sampled_taxi_df.fareAmount)\\\n",
+							"                                & (sampled_taxi_df.tripDistance > 0) & (sampled_taxi_df.tripDistance <= 100)\\\n",
+							"                                & (sampled_taxi_df.rateCodeId <= 5)\n",
+							"                                & (sampled_taxi_df.paymentType.isin({\"1\", \"2\"}))\n",
+							"                                )"
+						],
+						"outputs": [],
+						"execution_count": 15
+					},
+					{
+						"cell_type": "markdown",
+						"source": [
+							"## Data Prep and Featurization Part 2\n",
+							"\n",
+							"Having created new variables its now possible to drop the columns they were derived from so that the dataframe that goes into the model is the smallest in terms of number of variables, that is required.\n",
+							"\n",
+							"Also create some more features based on new columns from the first round.\n",
+							""
+						]
+					},
+					{
+						"cell_type": "code",
+						"source": [
+							"taxi_featurised_df = taxi_df.select('totalAmount', 'fareAmount', 'tipAmount', 'paymentType', 'passengerCount'\\\n",
+							"                                                , 'tripDistance', 'weekdayString', 'pickupHour','tripTimeSecs','tipped'\\\n",
+							"                                                , when((taxi_df.pickupHour <= 6) | (taxi_df.pickupHour >= 20),\"Night\")\\\n",
+							"                                                .when((taxi_df.pickupHour >= 7) & (taxi_df.pickupHour <= 10), \"AMRush\")\\\n",
+							"                                                .when((taxi_df.pickupHour >= 11) & (taxi_df.pickupHour <= 15), \"Afternoon\")\\\n",
+							"                                                .when((taxi_df.pickupHour >= 16) & (taxi_df.pickupHour <= 19), \"PMRush\")\\\n",
+							"                                                .otherwise(0).alias('trafficTimeBins')\n",
+							"                                              )\\\n",
+							"                                       .filter((taxi_df.tripTimeSecs >= 30) & (taxi_df.tripTimeSecs <= 7200))"
+						],
+						"outputs": [],
+						"execution_count": 16
+					},
+					{
+						"cell_type": "markdown",
+						"source": [
+							"## Encoding\n",
+							"\n",
+							"Different ML algorithms support different types of input, for this example Logistic Regression is being used for Binary Classification. This means that any Categorical (string) variables must be converted to numbers.\n",
+							"\n",
+							"The process is not as simple as a \"map\" style function as the relationship between the numbers can introduce a bias in the resulting model, the approach is to index the variable and then encode using a std approach called One Hot Encoding.\n",
+							"\n",
+							"This approach requires the encoder to \"learn\"/fit a model over the data in the Spark instance and then transform based on what was learnt.\n",
+							""
+						]
+					},
+					{
+						"cell_type": "code",
+						"source": [
+							"# The sample uses an algorithm that only works with numeric features convert them so they can be consumed\n",
+							"sI1 = StringIndexer(inputCol=\"trafficTimeBins\", outputCol=\"trafficTimeBinsIndex\"); \n",
+							"en1 = OneHotEncoder(dropLast=False, inputCol=\"trafficTimeBinsIndex\", outputCol=\"trafficTimeBinsVec\");\n",
+							"sI2 = StringIndexer(inputCol=\"weekdayString\", outputCol=\"weekdayIndex\"); \n",
+							"en2 = OneHotEncoder(dropLast=False, inputCol=\"weekdayIndex\", outputCol=\"weekdayVec\");\n",
+							"\n",
+							"# Create a new dataframe that has had the encodings applied\n",
+							"encoded_final_df = Pipeline(stages=[sI1, en1, sI2, en2]).fit(taxi_featurised_df).transform(taxi_featurised_df)"
+						],
+						"outputs": [],
+						"execution_count": 17
+					},
+					{
+						"cell_type": "markdown",
+						"source": [
+							"## Generation of Testing and Training Data Sets\n",
+							"Simple split, 70% for training and 30% for testing the model. Playing with this ratio may result in different models.\n",
+							""
+						]
+					},
+					{
+						"cell_type": "code",
+						"source": [
+							"# Decide on the split between training and testing data from the dataframe \n",
+							"trainingFraction = 0.7\n",
+							"testingFraction = (1-trainingFraction)\n",
+							"seed = 1234\n",
+							"\n",
+							"# Split the dataframe into test and training dataframes\n",
+							"train_data_df, test_data_df = encoded_final_df.randomSplit([trainingFraction, testingFraction], seed=seed)"
+						],
+						"outputs": [],
+						"execution_count": 18
+					},
+					{
+						"cell_type": "markdown",
+						"source": [
+							"## Train the Model\n",
+							"\n",
+							"Train the Logistic Regression model and then evaluate it using Area under ROC as the metric."
+						]
+					},
+					{
+						"cell_type": "code",
+						"source": [
+							"## Create a new LR object for the model\n",
+							"logReg = LogisticRegression(maxIter=10, regParam=0.3, labelCol = 'tipped')\n",
+							"\n",
+							"## The formula for the model\n",
+							"classFormula = RFormula(formula=\"tipped ~ pickupHour + weekdayVec + passengerCount + tripTimeSecs + tripDistance + fareAmount + paymentType+ trafficTimeBinsVec\")\n",
+							"\n",
+							"## Undertake training and create an LR model\n",
+							"lrModel = Pipeline(stages=[classFormula, logReg]).fit(train_data_df)\n",
+							"\n",
+							"## Saving the model is optional but its another for of inter session cache\n",
+							"datestamp = datetime.now().strftime('%m-%d-%Y-%s');\n",
+							"fileName = \"lrModel_\" + datestamp;\n",
+							"logRegDirfilename = fileName;\n",
+							"lrModel.save(logRegDirfilename)\n",
+							"\n",
+							"## Predict tip 1/0 (yes/no) on the test dataset, evaluation using AUROC\n",
+							"predictions = lrModel.transform(test_data_df)\n",
+							"predictionAndLabels = predictions.select(\"label\",\"prediction\").rdd\n",
+							"metrics = BinaryClassificationMetrics(predictionAndLabels)\n",
+							"print(\"Area under ROC = %s\" % metrics.areaUnderROC)"
+						],
+						"outputs": [],
+						"execution_count": 19
+					},
+					{
+						"cell_type": "markdown",
+						"source": [
+							"## Evaluate and Visualize\n",
+							"\n",
+							"Plot the actual curve to develop a better understanding of the model.\n",
+							""
+						]
+					},
+					{
+						"cell_type": "code",
+						"source": [
+							"## Plot the ROC curve, no need for pandas as this uses the modelSummary object\n",
+							"modelSummary = lrModel.stages[-1].summary\n",
+							"\n",
+							"plt.plot([0, 1], [0, 1], 'r--')\n",
+							"plt.plot(modelSummary.roc.select('FPR').collect(),\n",
+							"         modelSummary.roc.select('TPR').collect())\n",
+							"plt.xlabel('False Positive Rate')\n",
+							"plt.ylabel('True Positive Rate')\n",
+							"plt.show()"
+						],
+						"outputs": [],
+						"execution_count": 20
+					}
+				]
 			},
 			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/jsg2ytbl5v5tdzj2pocws1p1')]",
+			"type": "Microsoft.Synapse/workspaces/sqlPools",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"collation": "SQL_Latin1_General_CP1_CI_AS",
+				"maxSizeBytes": 263882790666240,
+				"annotations": []
+			},
+			"dependsOn": [],
+			"location": "southcentralus"
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/default')]",
+			"type": "Microsoft.Synapse/workspaces/managedVirtualNetworks",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/TripFaresDataPipeline_CustomAlert')]",
+			"type": "Microsoft.Synapse/workspaces/pipelines",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"activities": [
+					{
+						"name": "IngestTripDataIntoADLS",
+						"description": "Copies the trip data csv file from the git repo and loads it into the ADLS.",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.00:10:00",
+							"retry": 3,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "HttpReadSettings",
+									"requestMethod": "GET"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "tripsDataSource",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "tripDataSink",
+								"type": "DatasetReference",
+								"parameters": {
+									"datalakeAccountName": {
+										"value": "@pipeline().parameters.datalakeAccountName",
+										"type": "Expression"
+									},
+									"keyVaultName": {
+										"value": "@pipeline().parameters.KeyVaultName",
+										"type": "Expression"
+									}
+								}
+							}
+						]
+					},
+					{
+						"name": "IngestTripFaresDataIntoADLS",
+						"description": "Copies the trip fare data csv file from the git repo and loads it into the ADLS.",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.00:10:00",
+							"retry": 3,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "HttpReadSettings",
+									"requestMethod": "GET"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "faresDataSource",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "faresDataSink",
+								"type": "DatasetReference",
+								"parameters": {
+									"keyVaultName": {
+										"value": "@pipeline().parameters.KeyVaultName",
+										"type": "Expression"
+									},
+									"datalakeAccountName": {
+										"value": "@pipeline().parameters.datalakeAccountName",
+										"type": "Expression"
+									}
+								}
+							}
+						]
+					},
+					{
+						"name": "JoinAndAggregateData",
+						"description": "Reads the raw data from both CSV files inside the ADLS, performs the desired transformations (inner join and aggregation) and writes the transformed data into the synapse SQL pool.",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "Create Schema If Does Not Exists",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.00:30:00",
+							"retry": 3,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "tripFaresDataTransformations",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"TripDataCSV": {
+										"datalakeAccountName": {
+											"value": "@pipeline().parameters.datalakeAccountName",
+											"type": "Expression"
+										},
+										"keyVaultName": {
+											"value": "@pipeline().parameters.KeyVaultName",
+											"type": "Expression"
+										}
+									},
+									"FaresDataCSV": {
+										"keyVaultName": {
+											"value": "@pipeline().parameters.KeyVaultName",
+											"type": "Expression"
+										},
+										"datalakeAccountName": {
+											"value": "@pipeline().parameters.datalakeAccountName",
+											"type": "Expression"
+										}
+									},
+									"SynapseAnalyticsSink": {
+										"SchemaName": {
+											"value": "@pipeline().parameters.SchemaName",
+											"type": "Expression"
+										},
+										"SynapseWorkspaceName": {
+											"value": "@pipeline().parameters.SynapseWorkspaceName",
+											"type": "Expression"
+										},
+										"SQLDedicatedPoolName": {
+											"value": "@pipeline().parameters.SQLDedicatedPoolName",
+											"type": "Expression"
+										},
+										"keyVaultName": {
+											"value": "@pipeline().parameters.KeyVaultName",
+											"type": "Expression"
+										},
+										"SQLLoginUsername": {
+											"value": "@pipeline().parameters.SQLLoginUsername",
+											"type": "Expression"
+										}
+									}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "Create Schema If Does Not Exists",
+						"description": "Creates the schema inside the SQL dedicated pool. Shema name comes from the pipeline parameter 'SchemaName'.",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "IngestTripDataIntoADLS",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "IngestTripFaresDataIntoADLS",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.00:05:00",
+							"retry": 3,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderQuery": {
+									"value": "IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = '@{pipeline().parameters.SchemaName}')\nBEGIN\nEXEC('CREATE SCHEMA @{pipeline().parameters.SchemaName}')\nselect Count(*) from sys.symmetric_keys;\nEND\nELSE\nBEGIN\n    select Count(*) from sys.symmetric_keys;\nEND",
+									"type": "Expression"
+								},
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "azureSynapseAnalyticsSchema",
+								"type": "DatasetReference",
+								"parameters": {
+									"SynapseWorkspaceName": {
+										"value": "@pipeline().parameters.SynapseWorkspaceName",
+										"type": "Expression"
+									},
+									"SQLDedicatedPoolName": {
+										"value": "@pipeline().parameters.SQLDedicatedPoolName",
+										"type": "Expression"
+									},
+									"keyVaultName": {
+										"value": "@pipeline().parameters.KeyVaultName",
+										"type": "Expression"
+									},
+									"SQLLoginUsername": {
+										"value": "@pipeline().parameters.SQLLoginUsername",
+										"type": "Expression"
+									}
+								}
+							},
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "Copy data Trips Data",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "Create Schema If Does Not Exists",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "HttpReadSettings",
+									"requestMethod": "GET"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"preCopyScript": "IF (EXISTS (SELECT *\n  FROM INFORMATION_SCHEMA.TABLES\n  WHERE TABLE_SCHEMA = 'dbo'\n  AND TABLE_NAME = 'TripsData'))\nBEGIN \n   Truncate table TripsData;\nEnd\n",
+								"allowPolyBase": true,
+								"polyBaseSettings": {
+									"rejectValue": 0,
+									"rejectType": "value",
+									"useTypeDefault": true
+								},
+								"tableOption": "autoCreate",
+								"disableMetricsCollection": false
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "TripFaresDataLakeStorageLinkedService",
+									"type": "LinkedServiceReference",
+									"parameters": {
+										"keyVaultName": {
+											"value": "@pipeline().parameters.KeyVaultName",
+											"type": "Expression"
+										},
+										"datalakeAccountName": {
+											"value": "@pipeline().parameters.datalakeAccountName",
+											"type": "Expression"
+										}
+									}
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "tripsDataSource",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "AzureSynapseAnalyticsTripsData",
+								"type": "DatasetReference",
+								"parameters": {
+									"SynapseWorkspaceName": {
+										"value": "@pipeline().parameters.SynapseWorkspaceName",
+										"type": "Expression"
+									},
+									"SQLDedicatedPoolName": {
+										"value": "@pipeline().parameters.SQLDedicatedPoolName",
+										"type": "Expression"
+									},
+									"keyVaultName": {
+										"value": "@pipeline().parameters.KeyVaultName",
+										"type": "Expression"
+									},
+									"SQLLoginUsername": {
+										"value": "@pipeline().parameters.SQLLoginUsername",
+										"type": "Expression"
+									}
+								}
+							}
+						]
+					},
+					{
+						"name": "Copy data Fares Data",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "Create Schema If Does Not Exists",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "HttpReadSettings",
+									"requestMethod": "GET"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"preCopyScript": "IF (EXISTS (SELECT *\n  FROM INFORMATION_SCHEMA.TABLES\n  WHERE TABLE_SCHEMA = 'dbo'\n  AND TABLE_NAME = 'FaresData'))\nBEGIN \n   Truncate table FaresData;\nEnd\n",
+								"allowPolyBase": true,
+								"polyBaseSettings": {
+									"rejectValue": 0,
+									"rejectType": "value",
+									"useTypeDefault": true
+								},
+								"tableOption": "autoCreate",
+								"disableMetricsCollection": false
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "TripFaresDataLakeStorageLinkedService",
+									"type": "LinkedServiceReference",
+									"parameters": {
+										"keyVaultName": {
+											"value": "@pipeline().parameters.KeyVaultName",
+											"type": "Expression"
+										},
+										"datalakeAccountName": {
+											"value": "@pipeline().parameters.datalakeAccountName",
+											"type": "Expression"
+										}
+									}
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "faresDataSource",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "AzureSynapseAnalyticsFaresData",
+								"type": "DatasetReference",
+								"parameters": {
+									"SynapseWorkspaceName": {
+										"value": "@pipeline().parameters.SynapseWorkspaceName",
+										"type": "Expression"
+									},
+									"SQLDedicatedPoolName": {
+										"value": "@pipeline().parameters.SQLDedicatedPoolName",
+										"type": "Expression"
+									},
+									"keyVaultName": {
+										"value": "@pipeline().parameters.KeyVaultName",
+										"type": "Expression"
+									},
+									"SQLLoginUsername": {
+										"value": "@pipeline().parameters.SQLLoginUsername",
+										"type": "Expression"
+									}
+								}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"parameters": {
+					"SchemaName": {
+						"type": "string",
+						"defaultValue": "tripFares"
+					},
+					"SynapseWorkspaceName": {
+						"type": "string",
+						"defaultValue": "jsg2ytbl5v5tdzj2pocws1.sql.azuresynapse.net"
+					},
+					"SQLDedicatedPoolName": {
+						"type": "string",
+						"defaultValue": "jsg2ytbl5v5tdzj2pocws1p1"
+					},
+					"SQLLoginUsername": {
+						"type": "string",
+						"defaultValue": "JSG-Admin"
+					},
+					"KeyVaultName": {
+						"type": "string",
+						"defaultValue": "kvjsg2ytbl5v5tdzj2poc"
+					},
+					"datalakeAccountName": {
+						"type": "string",
+						"defaultValue": "jsg2ytbl5v5tdzj2poc"
+					}
+				},
+				"folder": {
+					"name": "TripFaresDataPipeline"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/tripsDataSource')]",
+				"[concat(variables('workspaceId'), '/datasets/tripDataSink')]",
+				"[concat(variables('workspaceId'), '/datasets/faresDataSource')]",
+				"[concat(variables('workspaceId'), '/datasets/faresDataSink')]",
+				"[concat(variables('workspaceId'), '/dataflows/tripFaresDataTransformations')]",
+				"[concat(variables('workspaceId'), '/datasets/azureSynapseAnalyticsSchema')]",
+				"[concat(variables('workspaceId'), '/datasets/AzureSynapseAnalyticsTripsData')]",
+				"[concat(variables('workspaceId'), '/datasets/AzureSynapseAnalyticsFaresData')]",
+				"[concat(variables('workspaceId'), '/linkedServices/TripFaresDataLakeStorageLinkedService')]"
+			]
 		}
 	]
 }

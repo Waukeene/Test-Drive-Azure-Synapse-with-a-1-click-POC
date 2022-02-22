@@ -8,6 +8,12 @@
 		"TripFaresSynapseAnalyticsLinkedService_connectionString": {
 			"value": ""
 		},
+		"AzureMLService_properties_typeProperties_subscriptionId": {
+			"value": "34ee4d01-fcbb-4649-a377-491b2a66baa8"
+		},
+		"AzureMLService_properties_typeProperties_resourceGroupName": {
+			"value": "devintersection-218-aml-demo"
+		},
 		"HttpServerTripDataLinkedService_properties_typeProperties_url": {
 			"value": "https://raw.githubusercontent.com/Azure/Test-Drive-Azure-Synapse-with-a-1-click-POC/main/tripDataAndFaresCSV/trip-data.csv"
 		},
@@ -19,12 +25,6 @@
 		},
 		"keyVaultLinkedservice_properties_typeProperties_baseUrl": {
 			"value": "@{concat('https://',linkedService().keyVaultName,'.vault.azure.net/')}"
-		},
-		"AzureMLService_properties_typeProperties_subscriptionId": {
-			"value": "34ee4d01-fcbb-4649-a377-491b2a66baa8"
-		},
-		"AzureMLService_properties_typeProperties_resourceGroupName": {
-			"value": "devintersection-218-aml-demo"
 		}
 	}
 }
